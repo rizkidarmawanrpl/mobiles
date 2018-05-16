@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>SIMPATIK</title>
+  
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="core/css/bootstrap.min.css">
+  <!-- Plugins CSS -->
+  <link rel="stylesheet" href="js/carousel/owl.carousel.min.css">
+  <link rel="stylesheet" href="css/animate.min.css">
+  <!-- Customing CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- fonts CSS -->
+  <link rel="stylesheet" href="fonts/ionicons/css/ionicons.min.css">
+</head>
+
+<body>
+  <div class="wrapper login">
+    <div class="login-wrapper">
+      <div class="box">
+        <header class="box-header text-center">
+          <span class="logo-title">
+            SIMPATIK
+            <small>Sistem Informasi Pelaporan dan Statistik</small>
+          </span>
+        </header>
+        <div class="box-body">
+          <div id="alert-username" class="alert alert-danger" style="display: none;">
+            Username tidak terdaftar
+          </div>
+          <div id="alert-password" class="alert alert-danger" style="display: none;">
+            Password yang anda masukan salah
+          </div>
+          <form action="#" method="post">
+            <div class="form-group">
+              <input type="text" name="username" placeholder="Username" class="form-control" />
+            </div>
+            <div class="form-group">
+              <input type="password" name="password" placeholder="Password" class="form-control" />
+            </div>
+            <button id="login-act" type="button" class="btn btn-block">Login</button>
+          </form>
+        </div>
+        <footer class="box-footer text-center">
+          <span class="footer-title">&copy; 2018 Bappeda Kota Bogor</span>
+        </footer>
+      </div>
+    </div>
+  </div>
+  <!-- Back To Top /#backtop-->
+  <div class="backTop"><i class="ion-arrow-up-c"></i></div>
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="js/waves/waves.min.js"></script>
+  <script src="js/jquery.swipe.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/carousel/owl.carousel.min.js"></script>
+  <script src="js/jquery.equalHeight.min.js"></script>
+  <script type="text/javascript">
+    $('#login-act').on("click", function() {
+      $.ajax({
+        url: url_api + 'auth?key=' + api_key, 
+        method: 'POST', 
+        data: {
+          username: $('input[name="username"]').val(), 
+          password: $('input[name="password"]').val()
+        }, 
+      })
+      .done(function(res) {
+        var data = $.parseJSON(res);
+
+        if (data.status == "username") {
+          alert("Username tidak dikenali");
+          $('input[name="username"]').val("");
+          $('input[name="password"]').val("");  
+        }
+        else if (data.status == "password") {
+          alert("Password yang anda masukan salah");
+          $('input[name="password"]').val(""); 
+        }
+        else {
+          localStorage.setItem('idpengguna', data.idpengguna);
+          localStorage.setItem('nama', data.nama);
+          localStorage.setItem('username', data.username);
+          localStorage.setItem('email', data.email); 
+          localStorage.setItem('kontak', data.kontak);
+          localStorage.setItem('opd', data.opd); 
+          localStorage.setItem('idopd', data.idopd); 
+          localStorage.setItem('alias', data.alias);  
+
+          document.location.href = 'index.html';   
+        }
+      })
+      .fail(function(xhr, err) {
+        alert(err); 
+      }); 
+    }); 
+  </script>
+</body>
+</html>

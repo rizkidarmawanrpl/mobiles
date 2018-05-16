@@ -1,0 +1,290 @@
+<form action="#" id="edit-profile" method="POST" enctype="multipart/form-data">
+  <div class="container-fluid content" id="put">
+
+  </div>
+</form>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="formData" method="POST">
+        <div class="modal-header">
+          <h6 class="modal-title"><strong>Laporan <span class="bulan"></span> - <span class="tahun"></span></strong></h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning pesan">
+            
+          </div>
+          <hr>
+          <div class="form-group">
+            <label>Elemen data</label>
+            <select name="iditemrevisi" class="form-control">
+              <option value="" id="opt-default">Pilih Elemen</option>
+            </select>
+          </div>
+          <input type="hidden" name="idmasterlaporan">
+          <input type="hidden" name="idatribut">
+          <div id="put-form"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="simpan" class="btn btn-primary">Simpan</button>
+          <button type="button" id="pesan" class="btn btn-info">Pesan</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="modal-chat" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title"><strong>Percakapan Dengan Admin</strong></h6>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="panel-body">
+          <div class="chat-holder-pesan margin-bottom-15" style="height: auto; min-height: 250px; max-height: 300px">
+            <div class="chat-list" id="put-pesan">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer form-inline" style="justify-content: normal;">
+        <div class="form-group" style="margin-bottom: 0px; width: 70%; ">
+          <input type="text" name="pesan" placeholder="Pesan.." class="form-control pesan" required style="background: #f9f9f9; padding: 8px;">
+        </div>
+        <button style="width: 25%;" type="button" onclick="send_message()" class="btn btn-success"><i class="fa fa-fw fa-send"></i> Kirim</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+
+  function send_message() {
+    var pesan = $('input[name="pesan"]').val(); 
+    var idmasterlaporan = $('input[name="idmasterlaporan"]').val(); 
+    var idpengguna = localStorage.getItem('idpengguna'); 
+    if (pesan == "") {
+      alert("Pesan tidak boleh kosong"); 
+    } else {
+      $.ajax({
+        url: url_api + "send_message?key=" + api_key, 
+        method: "POST", 
+        data: {
+          idmasterlaporan: idmasterlaporan,
+          idpengguna: idpengguna, 
+          pesan: pesan
+        }
+      })
+      .done(function(res) {
+        data = $.parseJSON(res); 
+        //res 
+        pesan = '<li class="user">' + 
+                    '<span>' +
+                      '<small> Saya <br/>' + 
+                      data.waktu + '<br/></small>' +
+                      data.text + '<br/>' +
+                    '</span>' +
+                  '</li>'; 
+
+        $('#put-pesan').append(pesan); 
+      })
+      .fail(function(xhr, err) {
+        console.log(err); 
+      }); 
+    }
+  }
+
+  function openModal(idmasterlaporan) {
+    $.ajax({
+      url: url_api + "get_item_revisi?key=" + api_key,
+      method: "POST", 
+      data: { idmasterlaporan : idmasterlaporan }
+    })
+    .done(function(res) {
+      var data = $.parseJSON(res); 
+      $('input[name="idmasterlaporan"]').val(idmasterlaporan); 
+      $('.tahun').html(data.tahun); 
+      $('.bulan').html(data.bulan); 
+      $('.pesan').html(data.pesan); 
+      $('select[name="iditemrevisi"] .rmv').remove();
+      $.each(data.result, function(i, item) {
+        $('select[name="iditemrevisi"]').append('<option class="rmv" value="' + item['iditemrevisi'] + '">' + item['judul'] + '</option>'); 
+      })
+
+      $('#modal').modal('show'); 
+    }); 
+  }
+
+  function resetInput() {
+    $('#put-form').html("");
+  }
+
+  $('select[name="iditemrevisi"]').on("change", function() {
+    var iditemrevisi = $(this).val(); 
+    if (iditemrevisi !== "") {
+      $.ajax({
+        url: url_api + "get_value_revisi?key=" + api_key, 
+        method: "POST", 
+        data: {
+          iditemrevisi: iditemrevisi
+        }
+      })
+      .done(function(res) {
+        var data = $.parseJSON(res); 
+        //set id attribut 
+        $('input[name="idatribut"]').val(data.idatribut); 
+        //generate html input 
+        var html; 
+        html = '<div class="form-group">' +
+                  '<label>Kota Bogor</label>' + 
+                  '<div class="input-group">' +
+                    '<input type="text" name="kota" value="'+data.kota+'" class="form-control kota" placeholder="*Kota">' +
+                    '<span class="input-group-addon">'+data.satuan+'</span>' +
+                  '</div> ' +
+                  '<p class="help-block">Apabila data diinput berdasarkan kecamatan, maka abaikan kolom ini</p>' + 
+                '</div>'; 
+
+        $.each(data.result, function(i, item) {
+          html += '<div class="form-group">' +
+                    '<label>'+item['kecamatan']+'</label>' + 
+                    '<div class="input-group">' +
+                      '<input type="text" name="nilai['+item['idkecamatan']+']" value="'+item['nilai']+'" class="form-control nilai" placeholder="*Nilai">' +
+                      '<span class="input-group-addon">'+data.satuan+'</span>' +
+                    '</div> ' +
+                  '</div>';
+        })
+
+        $('#put-form').hide(); 
+        $('#put-form').html(html).promise().done(function() {
+          $('#put-form').fadeIn('slow'); 
+        }); 
+
+        $('.nilai').on("change", function() {
+          var element = $('.nilai'); 
+          var kota = 0; 
+          var nilai = $(this).val(); 
+          if ( ! isNaN(parseInt(nilai))) {
+            $.each(element, function(i, input) {
+              kota += parseInt(input.value); 
+            })
+
+            $('.kota').val(kota); 
+          } else {
+            $(this).val("0"); 
+          }
+        }); 
+      })
+      .fail(function(xhr, err) {
+        alert(err); 
+      });  
+    } else {
+      resetInput(); 
+    }
+  });
+
+  $.ajax({
+    url: url_api + "get_revisi?key=" + api_key, 
+    method: "POST", 
+    data: {
+      idopd: localStorage.getItem('idopd')
+    }
+  })
+  .done(function(res) {
+    var data = $.parseJSON(res); 
+    if (data.result == "") {
+      $('#put').html('<div class="alert alert-success"><h3>Info ! </h3> Belum ada data laporan Revisi</div>'); 
+    } else {
+      $.each(data.result, function(i, item) {
+        html = '<article class="berita ds-table">' +
+                  '<div class="cell-berita berita-cell-kiri ds-table-cell">' +
+                    '<a href="#" onclick="openModal(' + item['idmasterlaporan'] + ')">' + 
+                      '<strong>Data Tahun ' + item['tahun'] + ' Bulan ' + item['bulan'] + '</strong>' +
+                      '<br/>' +
+                      '<small>' + item['kategoriurusan'] + '</small>' +
+                    '</a>' +
+                    '<span>' +
+                      '<small><label class="badge badge-primary">Revisi</label></small>' +
+                      '<small style="display: block; padding: 0px">' +
+                        'Tanggal Pelaporan : ' + item['tgl_entri'] +
+                      '</small>' +
+                    '</span>' +
+                  '</div>' +
+                  '<div class="cell-berita berita-cell-kanan ds-table-cell">' +
+                    '<img src="img/icons/album.png">' +
+                  '</div>' +
+                '</article>';
+
+        $('#put').append(html); 
+      }); 
+    }
+  })
+  .fail(function(xhr, err) {
+    alert(err); 
+  });
+
+  $('#pesan').on("click", function() {
+    $.ajax({
+      url: url_api + "get_pesan?key=" + api_key, 
+      method: "POST", 
+      data: { idmasterlaporan: $('input[name="idmasterlaporan"]').val() } 
+    })
+    .done(function(res) {
+      var data = $.parseJSON(res); 
+      var pesan = ""; 
+      $.each(data.result, function(i, item) {
+        if (item['idpengguna'] == localStorage.getItem('idpengguna')) {
+          cls = "user"; 
+          name = "Saya"; 
+        } else {
+          cls = "admin"; 
+          name = "Administrator"; 
+        }
+
+        pesan += '<li class="'+cls+'">' + 
+                    '<span>' +
+                      '<small>'+name+'<br/>' + 
+                      item['waktu'] + '<br/></small>' +
+                      item['text'] + '<br/>' +
+                    '</span>' +
+                  '</li>'; 
+      }); 
+
+      $('#put-pesan').html(pesan).promise().done(function() {
+        $('#modal').modal('hide'); 
+        $('#modal-chat').modal('show'); 
+      }); 
+    })
+    .fail(function(xhr, err) {
+      alert(err); 
+    });
+  }); 
+
+  $('#modal-chat').on('hidden.bs.modal', function() {
+    $('#modal').modal('show'); 
+  }); 
+
+  $('#simpan').on("click", function() {
+    $.ajax({
+      url: url_api + "save?key=" + api_key, 
+      method: "POST", 
+      data: {
+        data: $('#formData').serialize()
+      }
+    })
+    .done(function(res) {
+      alert('Data Berhasil Disimpan'); 
+      resetInput(); 
+      $('#opt-default').attr('selected', 'selected'); 
+    })
+    .fail(function(xhr, err) {
+      alert(err); 
+    }); 
+  }); 
+</script>

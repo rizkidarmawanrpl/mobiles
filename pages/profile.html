@@ -1,0 +1,90 @@
+<form action="#"  method="POST" enctype="multipart/form-data" id="edit_profil" >
+  <div class="container-fluid content">
+    <div class="box">
+      <div class="box-body">
+        <div class="inner shadow">
+          <div class="form-group">
+            <label>Nama Pengguna</label>
+            <input type="text" name="nama" class="form-control" placeholder="*Nama pengguna">
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" placeholder="*Username">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="text" name="email" class="form-control" placeholder="*Email">
+          </div>
+          <div class="form-group">
+            <label>No. Telepon</label>
+            <input type="text" name="kontak" class="form-control" placeholder="*No Telepon">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" placeholder="*Password">
+          </div>
+          <div class="form-group">
+            <label>Konfirmasi password</label>
+            <input type="password" name="konfirmasi_password" class="form-control" placeholder="*Konfirmasi password">
+          </div>
+          <div class="box-footer">
+            <button type="submit" class="btn btn-block btn-success"><i class="ion-checkmark-circled"></i> Simpan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+  //get data from localstorage 
+  var idpengguna = localStorage.getItem('idpengguna');
+  var nama = localStorage.getItem('nama'); 
+  var username = localStorage.getItem('username'); 
+  var email = localStorage.getItem('email'); 
+  var kontak = localStorage.getItem('kontak'); 
+  //input 
+  var input_nama = $('#edit_profil input[name="nama"]'); 
+  var input_username = $('#edit_profil input[name="username"]'); 
+  var input_email = $('#edit_profil input[name="email"]'); 
+  var input_kontak = $('#edit_profil input[name="kontak"]'); 
+  var input_password = $('#edit_profil input[name="password"]'); 
+  var input_konfirmasi_password = $('#edit_profil input[name="konfirmasi_password"]'); 
+  //put 
+  input_nama.val(nama);
+  input_username.val(username);
+  input_email.val(email);
+  input_kontak.val(kontak);
+
+  $('#edit_profil').on("submit", function(e) {
+    e.preventDefault(); 
+    $.ajax({
+      url: url_api + "edit_profil?key=" + api_key, 
+      method: "POST", 
+      data: {
+        idpengguna: idpengguna, 
+        nama: input_nama.val(), 
+        username: input_username.val(), 
+        email: input_email.val(), 
+        kontak: input_kontak.val(),
+        password: input_password.val(), 
+        konfirmasi_password: input_konfirmasi_password.val()
+      }, 
+    })
+    .done(function(res) {
+      console.log(res); 
+      var data = $.parseJSON(res);
+      input_nama.val(data.nama);
+      input_username.val(data.username);
+      input_email.val(data.email);
+      input_kontak.val(data.kontak); 
+      localStorage.setItem('nama', data.nama);
+      localStorage.setItem('username', data.username); 
+      localStorage.setItem('kontak', data.kontak); 
+      localStorage.setItem('email', data.email)    
+      alert('Profil berhasil diperbaharui');
+    })
+    .fail(function(xhr, er) {
+      alert(er); 
+    }); 
+  }); 
+</script>

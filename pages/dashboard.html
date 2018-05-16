@@ -1,0 +1,84 @@
+<form action="#" id="edit-profile" method="POST" enctype="multipart/form-data">
+  <div class="container-fluid content" id="dashboard">
+    <div class="card">
+      <div class="card-header">
+        Keterisian data bulan <span class="bulan"></span> Tahun <span class="tahun"></span>
+      </div>
+      <div class="card-body">
+        <div id="put-grafik">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+  $.ajax({
+    url: url_api + "get_grafik_keterisian?key=" + api_key, 
+    method: "POST", 
+    data: {
+      idopd: localStorage.getItem('idopd')
+    }
+  })
+  .done(function(res) {
+    var data = $.parseJSON(res);
+    //put bulan dan tahun
+    $('#dashboard .bulan').html(data.bulan);
+    $('#dashboard .tahun').html(data.tahun);  
+    //foreach data 
+    $.each(data.result, function(i, item) {
+      $('#put-grafik').append('<div id="grafik-' + item['idkategoriurusan'] + '" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>'); 
+      Highcharts.chart('grafik-' + item['idkategoriurusan'], {
+        chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie'
+        },
+        title: {
+          text: ''
+        },
+        tooltip: {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+          pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+              enabled: true,
+              format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+              style: {
+                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+              }
+            }
+          }
+        },
+        series: [{
+          name: 'Brands',
+          colorByPoint: true,
+          data: [{
+            name: 'Element Wajib',
+            y: item['blm_terisi'],
+            sliced: true,
+            selected: true
+          }, {
+            name: 'Terisi',
+            y: item['terisi']
+          }]
+        }]
+      });
+    }) 
+  })
+  .fail(function(xhr, e) {
+    console.log(e); 
+  }); 
+
+  Highcharts.setOptions({
+      chart: {
+          style: {
+              fontFamily: 'Ruda'
+          }
+      }
+  });
+</script>
